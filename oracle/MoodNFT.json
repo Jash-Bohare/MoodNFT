@@ -1,0 +1,14 @@
+[
+  {
+    "tokenId": 0,
+    "mood": 3
+  },
+  {
+    "tokenId": 1,
+    "mood": -1
+  },
+  {
+    "tokenId": 2,
+    "mood": 5
+  }
+]
