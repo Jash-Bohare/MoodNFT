@@ -92,4 +92,4 @@ The system consists of two main parts:
 ### **Phase 6: Final Touches & Presentation (30-36 Hours)**
 
 * Polish the UI, add more documentation if needed.
-* Prepare for project submission.
+* Prepare for project submissio

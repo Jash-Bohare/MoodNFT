@@ -8,11 +8,10 @@ async function main() {
   const moodNFT = await MoodNFT.attach(contractAddress).connect(deployer);
 
   // 👇 Set recipient to your MetaMask wallet
-  const recipient = "0xc57ab1cef012cc669c89ca4efd929b807bd15a4c";
-  const tokenURI = "ipfs://example-token-uri.json";
+  const recipient = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266";
 
   console.log(`Minting NFT to address: ${recipient}`);
-  const tx = await moodNFT.mintNFT(recipient, tokenURI);
+  const tx = await moodNFT.mintNFT(recipient);
   const receipt = await tx.wait();
 
   console.log("✅ NFT confirmed in block:", receipt.blockNumber);

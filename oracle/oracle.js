@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { ethers } = require("ethers");
 const axios = require("axios");
 const fs = require("fs");
@@ -6,14 +7,14 @@ const path = require("path");
 // Set up the provider and signer (Hardhat local node)
 const provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
 
-// Use one of the default Hardhat private keys (Account #0)
-const privateKey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";  
+// Use private key from environment variable or fallback to hardcoded test key
+const privateKey = process.env.PRIVATE_KEY || "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 const wallet = new ethers.Wallet(privateKey, provider);
 
 // MoodNFT contract address and ABI
 const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; 
 const contractABI = [
-    "function updateMood(uint256 tokenId, int256 newMood) public",
+    "function updateMood(uint256 tokenId, int256 newMood, string memory newStatus) public",
     "function setOracle(address _oracle) public"
 ];
 
@@ -39,7 +40,7 @@ function fetchMoodData() {
     }
 }
 
-// Update the mood of a specific tokenId with AI predicted mood value
+// Update the mood and status of a specific tokenId with AI predicted values
 async function updateMood(tokenId) {
     const moodData = fetchMoodData();
     
@@ -50,24 +51,29 @@ async function updateMood(tokenId) {
 
     const tokenData = moodData.find(item => item.tokenId === tokenId); // Find the data for the specific tokenId
 
-    if (!tokenData || tokenData.mood === undefined) {
-        console.error(`❌ No mood data for tokenId ${tokenId}`);
+    if (!tokenData || tokenData.mood === undefined || tokenData.status === undefined) {
+        console.error(`❌ No mood/status data for tokenId ${tokenId}`);
         return;
     }
 
     const newMood = tokenData.mood;  // Get the mood value for the specified tokenId
+    const newStatus = tokenData.status; // Get the status value for the specified tokenId
 
     const contract = new ethers.Contract(contractAddress, contractABI, wallet);
-    const tx = await contract.updateMood(tokenId, newMood);
-    console.log(`😎 Mood update tx for tokenId ${tokenId}:`, tx.hash);
-    await tx.wait();
-    console.log("✅ Mood successfully updated.");
+    try {
+        const tx = await contract.updateMood(tokenId, newMood, newStatus);
+        console.log(`😎 Mood update tx for tokenId ${tokenId}:`, tx.hash);
+        await tx.wait();
+        console.log("✅ Mood and status successfully updated.");
+    } catch (err) {
+        console.error("❌ Error sending updateMood transaction:", err);
+    }
 }
 
 // Example usage
 async function main() {
     await setOracle();              // Run this only once per deployment to set the oracle address
-    await updateMood(1);            // tokenId = 1 (example), mood will be fetched from moodnft.json
+    await updateMood(0);            // Only update tokenId 0 (the NFT that exists)
 }
 
 main().catch((err) => console.error("❌ Error in oracle script:", err));

@@ -19,8 +19,6 @@ ignition/deployments/chain-31337
 #Keys
 .env
 
-public
-
 test
 
 ignition

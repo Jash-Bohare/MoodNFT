@@ -1,34 +1,30 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-const ConnectWallet = ({ setWalletAddress }) => {
-  const [isLoading, setIsLoading] = useState(false);
-
+function ConnectWallet({ setWalletAddress }) {
   const connectWallet = async () => {
-    setIsLoading(true);
     if (window.ethereum) {
       try {
         const accounts = await window.ethereum.request({
-          method: 'eth_requestAccounts',
+          method: "eth_requestAccounts"
         });
         setWalletAddress(accounts[0]);
-        setIsLoading(false);
       } catch (error) {
-        console.error('Error connecting wallet', error);
-        setIsLoading(false);
+        console.error("Error connecting wallet:", error);
       }
     } else {
-      alert('Please install MetaMask!');
-      setIsLoading(false);
+      alert("Please install MetaMask!");
     }
   };
 
   return (
-    <div>
-      <button onClick={connectWallet} disabled={isLoading}>
-        {isLoading ? 'Connecting...' : 'Connect Wallet'}
+    <div className="text-center">
+      <h2 className="neon-text mb-2">Connect Your Wallet</h2>
+      <p className="text-secondary mb-2">Connect your wallet to view and manage your MoodNFTs</p>
+      <button className="button" onClick={connectWallet}>
+        Connect Wallet
       </button>
     </div>
   );
-};
+}
 
 export default ConnectWallet;
