@@ -29,116 +29,81 @@ body {
 
 /* App Container */
 .App {
+  text-align: center;
   min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  color: #ffffff;
   padding: 2rem;
-  background: linear-gradient(135deg, rgba(0,242,255,0.05) 0%, rgba(255,0,255,0.05) 100%);
 }
 
 /* Header */
 .App-header {
-  position: relative;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  text-align: center;
+  margin-bottom: 2rem;
 }
 
 .App-header h1 {
   font-size: 3rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin-bottom: 0;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(45deg, #00f2ff, #ff00ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
 }
 
-.App-header p {
-  margin: 0;
-  padding-top: 0.25rem;
-  color: var(--text-secondary);
-  font-size: 1.1rem;
+.subtitle {
+  font-size: 1.2rem;
+  color: #888;
+  margin-bottom: 2rem;
 }
 
-/* Wallet Address Style */
-.wallet-address {
-  background: rgba(0, 242, 255, 0.1);
-  padding: 0.5rem 1rem;
-  border-radius: var(--border-radius);
-  border: 1px solid rgba(0, 242, 255, 0.2);
-  font-family: monospace;
-  font-size: 0.9rem;
-  color: var(--text-primary);
-}
-
-/* Card Styles */
-.card {
-  background: var(--card-bg);
+.wallet-info {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  border-radius: 12px;
   backdrop-filter: blur(10px);
-  border-radius: var(--border-radius);
-  padding: 2rem;
-  margin: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: var(--transition);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  margin-bottom: 2rem;
 }
 
-.card:hover {
-  transform: translateY(-5px);
-  border-color: var(--primary);
-  box-shadow: 0 8px 32px 0 rgba(0, 242, 255, 0.2);
+.wallet-address {
+  color: #00f2ff;
+  margin-left: 0.5rem;
+  font-family: monospace;
 }
 
-/* Button Styles */
-.button {
-  background: linear-gradient(45deg, var(--primary), var(--secondary));
-  border: none;
-  border-radius: var(--border-radius);
-  color: var(--text-primary);
-  padding: 1rem 2rem;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 20px rgba(0, 242, 255, 0.5);
-}
-
-.button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* NFT Display */
-.nft-container {
+.nft-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2rem;
-  padding: 2rem;
+  padding: 1rem;
 }
 
 .nft-card {
-  position: relative;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
   overflow: hidden;
-  border-radius: var(--border-radius);
-  background: var(--card-bg);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   backdrop-filter: blur(10px);
-  transition: var(--transition);
 }
 
 .nft-card:hover {
-  transform: scale(1.02);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.nft-image-container {
+  width: 100%;
+  height: 300px;
+  background: linear-gradient(45deg, rgba(0, 242, 255, 0.1), rgba(255, 0, 255, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
 }
 
 .nft-image {
-  width: 100%;
-  height: 300px;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
-  border-radius: var(--border-radius) var(--border-radius) 0 0;
-  background: linear-gradient(45deg, rgba(0, 242, 255, 0.05), rgba(255, 0, 255, 0.05));
-  padding: 1rem;
   transition: transform 0.3s ease;
 }
 
@@ -148,88 +113,164 @@ body {
 
 .nft-info {
   padding: 1.5rem;
+  text-align: left;
 }
 
-.nft-title {
+.nft-info h3 {
   font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--primary);
-}
-
-.nft-description {
-  color: var(--text-secondary);
   margin-bottom: 1rem;
+  color: #00f2ff;
 }
 
-/* Status Badge */
-.status-badge {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  background: rgba(0, 255, 157, 0.1);
-  color: var(--success);
-  border: 1px solid var(--success);
-  margin: 0.5rem 0.5rem 0.5rem 0;
+.nft-info p {
+  margin: 0.5rem 0;
+  color: #ccc;
 }
 
-.status-badge:last-child {
-  margin-right: 0;
-}
-
-/* Status Badge Container */
-.status-badges {
+.mood-score, .mood-status, .nft-level, .nft-xp, .nft-interactions {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 0.5rem;
+}
+
+.interaction-buttons {
+  display: flex;
+  gap: 1rem;
   margin-top: 1rem;
 }
 
-/* Animations */
-@keyframes glow {
-  from {
-    text-shadow: 0 0 10px var(--primary),
-                 0 0 20px var(--primary),
-                 0 0 30px var(--primary);
-  }
-  to {
-    text-shadow: 0 0 20px var(--primary),
-                 0 0 30px var(--primary),
-                 0 0 40px var(--primary);
-  }
+.interact-button, .negative-interact-button {
+  flex: 1;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-/* Loading Animation */
+.interact-button {
+  background: linear-gradient(45deg, #00f2ff, #00ff9d);
+}
+
+.negative-interact-button {
+  background: linear-gradient(45deg, #ff00ff, #ff3d3d);
+}
+
+.interact-button:hover:not(:disabled), .negative-interact-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 242, 255, 0.3);
+}
+
+.interact-button.disabled, .negative-interact-button.disabled {
+  background: #666;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.message {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.message.error {
+  background: rgba(255, 61, 61, 0.1);
+  color: #ff3d3d;
+}
+
+.message.success {
+  background: rgba(0, 255, 157, 0.1);
+  color: #00ff9d;
+}
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+}
+
 .loading {
-  display: inline-block;
-  width: 50px;
-  height: 50px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  width: 20px;
+  height: 20px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #00f2ff;
   border-radius: 50%;
-  border-top-color: var(--primary);
-  animation: spin 1s ease-in-out infinite;
+  animation: spin 1s linear infinite;
+}
+
+.no-nfts {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.no-nfts p:first-child {
+  font-size: 1.5rem;
+  color: #00f2ff;
+  margin-bottom: 0.5rem;
+}
+
+.no-nfts p:last-child {
+  color: #888;
+}
+
+.connect-button, .refresh-button {
+  background: linear-gradient(45deg, #00f2ff, #ff00ff);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 0.5rem;
+}
+
+.connect-button:hover, .refresh-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 242, 255, 0.3);
+}
+
+.connect-button:disabled, .refresh-button:disabled {
+  background: #666;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-/* Responsive Design */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive design */
 @media (max-width: 768px) {
-  .App {
-    padding: 1rem;
+  .nft-grid {
+    grid-template-columns: 1fr;
   }
   
   .App-header h1 {
     font-size: 2rem;
   }
   
-  .nft-container {
-    grid-template-columns: 1fr;
+  .subtitle {
+    font-size: 1rem;
+  }
+
+  .interaction-buttons {
+    flex-direction: column;
   }
 }
 

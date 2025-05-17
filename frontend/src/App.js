@@ -7,16 +7,50 @@ const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 const contractABI = [
   "function balanceOf(address owner) public view returns (uint256)",
   "function tokenOfOwnerByIndex(address owner, uint256 index) public view returns (uint256)",
-  "function tokenURI(uint256 tokenId) public view returns (string)"
+  "function tokenURI(uint256 tokenId) public view returns (string)",
+  "function mintNFT(address to) public returns (uint256)",
+  "function interact(uint256 tokenId) public",
+  "function negativeInteract(uint256 tokenId) public",
+  "function checkInactivity(uint256 tokenId) public",
+  "function getNFTStats(uint256 tokenId) public view returns (int256, string, uint256, uint256, uint256, uint256, uint256)",
+  "function ownerOf(uint256 tokenId) public view returns (address)",
+  "function transferFrom(address from, address to, uint256 tokenId) public",
+  "function approve(address to, uint256 tokenId) public",
+  "function setApprovalForAll(address operator, bool approved) public",
+  "function getApproved(uint256 tokenId) public view returns (address)",
+  "function isApprovedForAll(address owner, address operator) public view returns (bool)",
+  "function name() public view returns (string)",
+  "function symbol() public view returns (string)",
+  "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)",
+  "event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId)",
+  "event ApprovalForAll(address indexed owner, address indexed operator, bool approved)",
+  "event ExperienceGained(uint256 indexed tokenId, uint256 amount, uint256 newTotal)",
+  "event LevelUp(uint256 indexed tokenId, uint256 newLevel)",
+  "event Interaction(uint256 indexed tokenId, uint256 newInteractionCount)",
+  "event ScoreDecreased(uint256 indexed tokenId, int256 newScore)"
 ];
 
 // Helper to decode base64 and parse JSON from data URI
 function decodeTokenURI(tokenURI) {
   try {
+    if (!tokenURI) {
+      console.log('No tokenURI provided');
+      return {
+        name: 'MoodNFT',
+        description: 'An NFT with AI-influenced mood and interactive features.',
+        image: 'https://nft-monkey.com/wp-content/uploads/2023/03/93f114269d5c8a6dacbcf587e4b4c493-1.png'
+      };
+    }
+
     if (!tokenURI.startsWith('data:application/json;base64,')) {
       console.log('Invalid tokenURI format:', tokenURI);
-      return null;
+      return {
+        name: 'MoodNFT',
+        description: 'An NFT with AI-influenced mood and interactive features.',
+        image: 'https://nft-monkey.com/wp-content/uploads/2023/03/93f114269d5c8a6dacbcf587e4b4c493-1.png'
+      };
     }
+
     const base64 = tokenURI.replace('data:application/json;base64,', '');
     const json = atob(base64);
     const metadata = JSON.parse(json);
@@ -24,7 +58,11 @@ function decodeTokenURI(tokenURI) {
     return metadata;
   } catch (e) {
     console.error('Error decoding tokenURI:', e);
-    return null;
+    return {
+      name: 'MoodNFT',
+      description: 'An NFT with AI-influenced mood and interactive features.',
+      image: 'https://nft-monkey.com/wp-content/uploads/2023/03/93f114269d5c8a6dacbcf587e4b4c493-1.png'
+    };
   }
 }
 
@@ -39,168 +77,423 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshMessage, setRefreshMessage] = useState("");
+  const [inactivityTimer, setInactivityTimer] = useState(null);
+  const [lastActivity, setLastActivity] = useState(Date.now());
+  const [error, setError] = useState('');
+  const [provider, setProvider] = useState(null);
+  const [contract, setContract] = useState(null);
 
   useEffect(() => {
-    if (walletAddress) {
-      fetchNFTs();
-    }
-  }, [walletAddress]);
-
-  const fetchNFTs = async () => {
-    setIsLoading(true);
-    if (window.ethereum) {
+    const initProvider = async () => {
       try {
-        const provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
-        const contract = new ethers.Contract(contractAddress, contractABI, provider);
-        
-        const balance = await contract.balanceOf(walletAddress);
-        console.log("NFT Balance:", balance.toString());
-        const tokens = [];
-
-        for (let i = 0; i < balance; i++) {
-          const tokenId = await contract.tokenOfOwnerByIndex(walletAddress, i);
-          console.log("Token ID:", tokenId.toString());
-          const tokenURI = await contract.tokenURI(tokenId);
-          console.log("Token URI:", tokenURI);
-          const metadata = decodeTokenURI(tokenURI);
-          console.log("Decoded Metadata:", metadata);
-          tokens.push({ tokenId, tokenURI, metadata });
+        if (!window.ethereum) {
+          throw new Error("Please install MetaMask");
         }
 
-        console.log("Final tokens array:", tokens);
-        setNfts(tokens);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching NFTs:", error);
-        setIsLoading(false);
+        // Initialize provider with specific network configuration
+        const newProvider = new ethers.BrowserProvider(window.ethereum);
+        
+        // Get the signer
+        const signer = await newProvider.getSigner();
+        
+        // Initialize contract with signer
+        const newContract = new ethers.Contract(contractAddress, contractABI, signer);
+        
+        // Test contract connection
+        try {
+          const name = await newContract.name();
+          console.log("Contract name:", name);
+        } catch (err) {
+          console.error("Error testing contract connection:", err);
+          throw new Error("Failed to connect to contract");
+        }
+        
+        setProvider(newProvider);
+        setContract(newContract);
+        setError('');
+        console.log("Provider and contract initialized successfully");
+      } catch (err) {
+        console.error("Failed to initialize provider:", err);
+        setError("Failed to connect to network. Please make sure MetaMask is installed and connected.");
       }
-    } else {
-      alert("Please install MetaMask!");
+    };
+
+    initProvider();
+
+    // Listen for account changes
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', (accounts) => {
+        if (accounts.length === 0) {
+          setWalletAddress('');
+          setNfts([]);
+        } else {
+          setWalletAddress(accounts[0]);
+        }
+      });
+
+      window.ethereum.on('chainChanged', () => {
+        window.location.reload();
+      });
+    }
+
+    return () => {
+      if (window.ethereum) {
+        window.ethereum.removeAllListeners('accountsChanged');
+        window.ethereum.removeAllListeners('chainChanged');
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (walletAddress && contract && provider) {
+      console.log("Wallet connected, fetching NFTs...");
+      checkAndMintNFT();
+    }
+  }, [walletAddress, contract, provider]);
+
+  const checkAndMintNFT = async () => {
+    if (!provider || !contract || !walletAddress) {
+      console.log("Provider, contract, or wallet address not initialized");
+      return;
+    }
+
+    try {
+      const signer = await provider.getSigner();
+      const contractWithSigner = contract.connect(signer);
+      
+      console.log("Checking balance for wallet:", walletAddress);
+      const balance = await contractWithSigner.balanceOf(walletAddress);
+      console.log("Initial balance:", balance.toString());
+      
+      if (balance.toString() === "0") {
+        console.log("No NFTs found, minting new NFT...");
+        const tx = await contractWithSigner.mintNFT(walletAddress);
+        console.log("Mint transaction sent:", tx.hash);
+        await tx.wait();
+        console.log("Mint transaction confirmed");
+      }
+      
+      await fetchNFTs();
+    } catch (error) {
+      console.error("Error checking/minting NFT:", error);
+      if (error.message.includes("network")) {
+        setError("Please switch to the Hardhat network in MetaMask");
+      } else {
+        setError("Failed to mint NFT. Please try again.");
+      }
+    }
+  };
+
+  const fetchNFTs = async () => {
+    if (!provider || !contract || !walletAddress) {
+      console.log("Provider, contract, or wallet address not initialized");
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      const signer = await provider.getSigner();
+      const contractWithSigner = contract.connect(signer);
+      
+      const balance = await contractWithSigner.balanceOf(walletAddress);
+      
+      if (balance.toString() === "0") {
+        setNfts([]);
+        setIsLoading(false);
+        return;
+      }
+
+      const tokens = [];
+      for (let i = 0; i < balance; i++) {
+        try {
+          const tokenId = await contractWithSigner.tokenOfOwnerByIndex(walletAddress, i);
+          const tokenURI = await contractWithSigner.tokenURI(tokenId);
+          const metadata = decodeTokenURI(tokenURI);
+          const stats = await contractWithSigner.getNFTStats(tokenId);
+          
+          tokens.push({ tokenId, tokenURI, metadata, stats });
+        } catch (err) {
+          console.error(`Error fetching NFT ${i}:`, err);
+          continue;
+        }
+      }
+
+      setNfts(tokens);
+    } catch (error) {
+      console.error("Error fetching NFTs:", error);
+      if (error.message.includes("network")) {
+        setError("Please switch to the Hardhat network in MetaMask");
+      } else {
+        setError("Failed to fetch NFTs. Please try again");
+      }
+    } finally {
       setIsLoading(false);
     }
   };
 
-  const refreshMood = async () => {
-    setRefreshing(true);
-    setRefreshMessage("");
+  const interactWithNFT = async (tokenId) => {
+    if (!provider || !contract || !walletAddress) {
+      setError("Please connect your wallet first");
+      return;
+    }
 
     try {
-        const response = await fetch("/api/refresh-mood", {
-            method: "POST",
-        });
+      setError('');
+      setRefreshMessage('');
+      setIsLoading(true);
 
-        if (!response.ok) {
-            throw new Error("Failed to refresh moods.");
-        }
-
-        const data = await response.json();
-        setRefreshMessage(data.message || "Mood refreshed successfully!");
-    } catch (error) {
-        setRefreshMessage(`❌ Error: ${error.message}`);
+      const signer = await provider.getSigner();
+      const contractWithSigner = contract.connect(signer);
+      
+      // Check cooldown before sending transaction
+      const stats = await contractWithSigner.getNFTStats(tokenId);
+      const lastInteractionTime = Number(stats[5]);
+      const cooldownTime = 60; // 1 minute for testing
+      const timeSinceLastInteraction = Math.floor(Date.now() / 1000) - lastInteractionTime;
+      
+      if (timeSinceLastInteraction < cooldownTime) {
+        const remainingTime = cooldownTime - timeSinceLastInteraction;
+        const minutes = Math.floor(remainingTime / 60);
+        const seconds = remainingTime % 60;
+        setError(`Please wait ${minutes}m ${seconds}s before interacting again`);
+        return;
+      }
+      
+      const tx = await contractWithSigner.interact(tokenId);
+      const receipt = await tx.wait();
+      
+      if (receipt.status === 1) {
+        await fetchNFTs();
+        setRefreshMessage("Successfully interacted with your NFT! Gained 10 XP!");
+      } else {
+        throw new Error("Transaction failed");
+      }
+    } catch (err) {
+      console.error("Error interacting with NFT:", err);
+      if (err.message.includes("user rejected")) {
+        setError("Transaction was rejected");
+      } else if (err.message.includes("network")) {
+        setError("Please switch to the Hardhat network in MetaMask");
+      } else {
+        setError("Failed to interact with NFT. Please try again");
+      }
     } finally {
-        setRefreshing(false);
+      setIsLoading(false);
     }
+  };
+
+  const negativeInteractWithNFT = async (tokenId) => {
+    if (!provider || !contract || !walletAddress) {
+      setError("Please connect your wallet first");
+      return;
+    }
+
+    try {
+      setError('');
+      setRefreshMessage('');
+      setIsLoading(true);
+
+      const signer = await provider.getSigner();
+      const contractWithSigner = contract.connect(signer);
+      
+      // Check cooldown before sending transaction
+      const stats = await contractWithSigner.getNFTStats(tokenId);
+      const lastInteractionTime = Number(stats[5]);
+      const cooldownTime = 60; // 1 minute for testing
+      const timeSinceLastInteraction = Math.floor(Date.now() / 1000) - lastInteractionTime;
+      
+      if (timeSinceLastInteraction < cooldownTime) {
+        const remainingTime = cooldownTime - timeSinceLastInteraction;
+        const minutes = Math.floor(remainingTime / 60);
+        const seconds = remainingTime % 60;
+        setError(`Please wait ${minutes}m ${seconds}s before interacting again`);
+        return;
+      }
+      
+      const tx = await contractWithSigner.negativeInteract(tokenId);
+      const receipt = await tx.wait();
+      
+      if (receipt.status === 1) {
+        await fetchNFTs();
+        setRefreshMessage("Negative interaction recorded. NFT's mood has decreased");
+      } else {
+        throw new Error("Transaction failed");
+      }
+    } catch (err) {
+      console.error("Error with negative interaction:", err);
+      if (err.message.includes("user rejected")) {
+        setError("Transaction was rejected");
+      } else if (err.message.includes("network")) {
+        setError("Please switch to the Hardhat network in MetaMask");
+      } else {
+        setError("Failed to perform negative interaction. Please try again");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const checkInactivity = async () => {
+    if (!provider || !contract || !walletAddress) {
+      console.log("Provider, contract, or wallet address not initialized");
+      return;
+    }
+
+    try {
+      const signer = await provider.getSigner();
+      const contractWithSigner = contract.connect(signer);
+      
+      for (const nft of nfts) {
+        try {
+          const tx = await contractWithSigner.checkInactivity(nft.tokenId);
+          await tx.wait();
+        } catch (err) {
+          console.error(`Error checking inactivity for token ${nft.tokenId}:`, err);
+          continue;
+        }
+      }
+      
+      // Only refresh if we're still mounted and visible
+      if (document.visibilityState === 'visible') {
+        await fetchNFTs();
+      }
+    } catch (err) {
+      console.error("Error checking inactivity:", err);
+      // Don't set error for inactivity check failures
+    }
+  };
+
+  const refreshNFTData = async () => {
+    if (!provider || !contract || !walletAddress) {
+      console.log("Provider, contract, or wallet address not initialized");
+      return;
+    }
+
+    setRefreshing(true);
+    setRefreshMessage("");
+    setError("");
+
+    try {
+      await fetchNFTs();
+      setRefreshMessage("NFT data refreshed successfully!");
+    } catch (error) {
+      setError("Failed to refresh NFT data. Please try again.");
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const renderNFT = (nft) => {
+    const { tokenId, metadata, stats } = nft;
+    const [moodScore, moodStatus, experiencePoints, level, interactionCount, lastInteractionTime] = stats;
+    const cooldownTime = 60; // 1 minute for testing
+    const timeSinceLastInteraction = Math.floor(Date.now() / 1000) - Number(lastInteractionTime);
+    const canInteract = timeSinceLastInteraction >= cooldownTime;
+    const remainingTime = cooldownTime - timeSinceLastInteraction;
+    const minutes = Math.floor(remainingTime / 60);
+    const seconds = remainingTime % 60;
+
+    return (
+      <div key={tokenId.toString()} className="nft-card">
+        <div className="nft-image-container">
+          <img src={getImageUrl(metadata?.image)} alt={`NFT #${tokenId}`} className="nft-image" />
+        </div>
+        <div className="nft-info">
+          <h3>{metadata?.name || `MoodNFT #${tokenId}`}</h3>
+          <p>{metadata?.description || "An NFT with AI-influenced mood and interactive features."}</p>
+          <div className="mood-score">
+            <span>Mood Score:</span>
+            <span>{moodScore.toString()}</span>
+          </div>
+          <div className="mood-status">
+            <span>Status:</span>
+            <span>{moodStatus}</span>
+          </div>
+          <div className="nft-level">
+            <span>Level:</span>
+            <span>{level.toString()}</span>
+          </div>
+          <div className="nft-xp">
+            <span>XP:</span>
+            <span>{experiencePoints.toString()}</span>
+          </div>
+          <div className="nft-interactions">
+            <span>Interactions:</span>
+            <span>{interactionCount.toString()}</span>
+          </div>
+          <div className="interaction-buttons">
+            <button
+              className={`interact-button ${!canInteract ? 'disabled' : ''}`}
+              onClick={() => interactWithNFT(tokenId)}
+              disabled={!canInteract || isLoading}
+            >
+              {canInteract ? 'Interact (+10 XP)' : `Cooldown: ${minutes}m ${seconds}s`}
+            </button>
+            <button
+              className={`negative-interact-button ${!canInteract ? 'disabled' : ''}`}
+              onClick={() => negativeInteractWithNFT(tokenId)}
+              disabled={!canInteract || isLoading}
+            >
+              {canInteract ? 'Don\'t Interact' : `Cooldown: ${minutes}m ${seconds}s`}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
     <div className="App">
       <header className="App-header">
-        <h1 className="neon-text">MoodNFT</h1>
-        <p className="text-secondary">Your Dynamic Mood NFT Collection</p>
+        <h1>MoodNFT</h1>
+        <p className="subtitle">Your AI-Influenced NFT Collection</p>
       </header>
 
-      {walletAddress ? (
-        <div className="card glass">
-          <div className="flex mb-2">
-            <p className="text-secondary">Connected Wallet:</p>
-            <p className="wallet-address">{walletAddress}</p>
-          </div>
-
-          {isLoading ? (
-            <div className="flex">
-              <div className="loading"></div>
-              <p>Loading your NFTs...</p>
-            </div>
-          ) : (
-            <div className="nft-container">
-              {nfts && nfts.length > 0 ? (
-                nfts.map((nft, index) => {
-                  console.log('Rendering NFT:', nft);
-                  const imageUrl = getImageUrl(nft.metadata?.image);
-                  console.log('Image URL for NFT:', imageUrl);
-                  return (
-                    <div key={index} className="nft-card glass">
-                      <div style={{ 
-                        width: '100%', 
-                        height: '300px', 
-                        background: 'linear-gradient(45deg, rgba(0, 242, 255, 0.1), rgba(255, 0, 255, 0.1))',
-                        borderRadius: '12px 12px 0 0',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}>
-                        <img 
-                          src={imageUrl}
-                          alt={nft.metadata?.name || `NFT #${nft.tokenId}`}
-                          style={{
-                            maxWidth: '100%',
-                            maxHeight: '100%',
-                            objectFit: 'contain'
-                          }}
-                          onError={(e) => {
-                            console.error('Image failed to load:', e);
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                      </div>
-                      <div className="nft-info">
-                        <h2 className="nft-title">{nft.metadata?.name || `NFT #${nft.tokenId}`}</h2>
-                        <p className="nft-description">
-                          {nft.metadata?.description || "A unique Mood NFT"}
-                        </p>
-                        
-                        <div className="status-badges">
-                          <div className="status-badge">
-                            Mood Score: {nft.metadata?.attributes?.find(attr => attr.trait_type === 'Mood Score')?.value || 'N/A'}
-                          </div>
-                          <div className="status-badge">
-                            Status: {nft.metadata?.attributes?.find(attr => attr.trait_type === 'Mood Status')?.value || 'N/A'}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="card glass text-center">
-                  <p className="neon-text">You don't own any NFTs yet!</p>
-                  <p className="text-secondary mt-1">Connect your wallet and mint your first MoodNFT</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="flex mt-2">
-            <button 
-              className="button" 
-              onClick={refreshMood} 
-              disabled={refreshing}
-            >
-              {refreshing ? "Refreshing..." : "Refresh Mood"}
-            </button>
-          </div>
-
-          {refreshMessage && (
-            <div className={`card glass mt-2 ${refreshMessage.includes("❌") ? "error" : "success"}`}>
-              <p>{refreshMessage}</p>
-            </div>
-          )}
-        </div>
+      {!walletAddress ? (
+        <ConnectWallet setWalletAddress={setWalletAddress} />
       ) : (
-        <div className="card glass">
-          <ConnectWallet setWalletAddress={setWalletAddress} />
+        <div className="wallet-info">
+          <span>Connected Wallet:</span>
+          <span className="wallet-address">{walletAddress}</span>
+          <button 
+            className="refresh-button" 
+            onClick={refreshNFTData}
+            disabled={refreshing}
+          >
+            {refreshing ? 'Refreshing...' : 'Refresh NFT Data'}
+          </button>
         </div>
       )}
+
+      {error && (
+        <div className="message error">
+          {error}
+        </div>
+      )}
+
+      {refreshMessage && (
+        <div className="message success">
+          {refreshMessage}
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="loading-container">
+          <div className="loading"></div>
+          <span>Loading...</span>
+        </div>
+      ) : nfts.length > 0 ? (
+        <div className="nft-grid">
+          {nfts.map(renderNFT)}
+        </div>
+      ) : walletAddress ? (
+        <div className="no-nfts">
+          <p>You don't own any NFTs yet!</p>
+          <p>Connect your wallet to mint your first MoodNFT</p>
+        </div>
+      ) : null}
     </div>
   );
 }

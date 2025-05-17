@@ -4,14 +4,14 @@ async function main() {
   const MoodNFT = await hre.ethers.getContractFactory("MoodNFT");
   const moodNFT = await MoodNFT.deploy();
 
-  await moodNFT.waitForDeployment(); 
+  await moodNFT.waitForDeployment();
 
-  const deployedAddress = await moodNFT.getAddress();
-
-  console.log(`✅ MoodNFT deployed to: ${deployedAddress}`);
+  console.log("MoodNFT deployed to:", await moodNFT.getAddress());
 }
 
-main().catch((error) => {
-  console.error("❌ Deployment failed:", error);
-  process.exit(1);
-});
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

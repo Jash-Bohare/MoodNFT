@@ -1,30 +1,64 @@
 import React from 'react';
 
-function ConnectWallet({ setWalletAddress }) {
+const ConnectWallet = ({ setWalletAddress }) => {
   const connectWallet = async () => {
-    if (window.ethereum) {
-      try {
-        const accounts = await window.ethereum.request({
-          method: "eth_requestAccounts"
-        });
-        setWalletAddress(accounts[0]);
-      } catch (error) {
-        console.error("Error connecting wallet:", error);
+    try {
+      if (!window.ethereum) {
+        throw new Error("Please install MetaMask to use this feature");
       }
-    } else {
-      alert("Please install MetaMask!");
+
+      // Request account access
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const account = accounts[0];
+      console.log("Connected account:", account);
+
+      // Check if we're on the right network
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+      console.log("Current chainId:", chainId);
+
+      if (chainId !== '0x7a69') { // Hardhat network
+        try {
+          // Try to switch to Hardhat network
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x7a69' }],
+          });
+        } catch (switchError) {
+          // If the network is not added to MetaMask, add it
+          if (switchError.code === 4902) {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: '0x7a69',
+                chainName: 'Hardhat Local',
+                nativeCurrency: {
+                  name: 'ETH',
+                  symbol: 'ETH',
+                  decimals: 18
+                },
+                rpcUrls: ['http://127.0.0.1:8545'],
+              }],
+            });
+          } else {
+            throw switchError;
+          }
+        }
+      }
+
+      setWalletAddress(account);
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+      alert(error.message);
     }
   };
 
   return (
-    <div className="text-center">
-      <h2 className="neon-text mb-2">Connect Your Wallet</h2>
-      <p className="text-secondary mb-2">Connect your wallet to view and manage your MoodNFTs</p>
-      <button className="button" onClick={connectWallet}>
+    <div className="connect-wallet">
+      <button onClick={connectWallet} className="connect-button">
         Connect Wallet
       </button>
     </div>
   );
-}
+};
 
 export default ConnectWallet;

@@ -8,7 +8,7 @@
 
 ### What Problem We Are Solving?
 
-Current NFTs are static digital assets, meaning their properties, like metadata and visual characteristics, remain unchanged after minting. This limits the possibilities for interaction and user engagement. NFTs are essentially "one-time" creations, and once they are minted, their state cannot evolve based on the user’s behavior or external factors like AI-driven analysis.
+Current NFTs are static digital assets, meaning their properties, like metadata and visual characteristics, remain unchanged after minting. This limits the possibilities for interaction and user engagement. NFTs are essentially "one-time" creations, and once they are minted, their state cannot evolve based on the user's behavior or external factors like AI-driven analysis.
 
 ### Why is This Problem Important or Urgent?
 
@@ -18,7 +18,7 @@ As NFTs grow in popularity, creators and collectors are looking for ways to enha
 
 ## **Solution / What It Does**
 
-This project introduces **MoodNFT**—ERC721 tokens that have metadata (like mood, power level, or status) that can change over time based on user interaction or external AI signals. The **AI oracle** plays a key role, providing off-chain data that updates the NFT’s attributes. The changes are then reflected on-chain and can be viewed through the NFT’s dynamic metadata.
+This project introduces **MoodNFT**—ERC721 tokens that have metadata (like mood, power level, or status) that can change over time based on user interaction or external AI signals. The **AI oracle** plays a key role, providing off-chain data that updates the NFT's attributes. The changes are then reflected on-chain and can be viewed through the NFT's dynamic metadata.
 
 Whenever a user interacts with the NFT in specific ways (positive or negative), the AI system evaluates the interaction and updates the NFT's attributes like `moodScore`, `statusLevel`, etc. This makes NFTs more interactive and engaging, as they can evolve based on real-time conditions.
 
@@ -32,7 +32,7 @@ Whenever a user interacts with the NFT in specific ways (positive or negative), 
 * **On-Chain Updates**: NFT attributes are stored on-chain, ensuring transparency and immutability.
 * **Oracle-Driven Changes**: Only authorized oracles (AI services) can modify the NFT's attributes to prevent unauthorized changes.
 * **Token URI**: The `tokenURI` function returns dynamic JSON metadata, reflecting the current state of the NFT.
-* **Event Emission**: Smart contract emits events when an NFT’s attribute is updated, allowing users to track changes.
+* **Event Emission**: Smart contract emits events when an NFT's attribute is updated, allowing users to track changes.
 
 ---
 
@@ -81,7 +81,7 @@ The system consists of two main parts:
 
 ### **Phase 4: Front-End Development (Optional, 12-24 Hours)**
 
-* Create a simple UI to showcase the NFT’s attributes.
+* Create a simple UI to showcase the NFT's attributes.
 * Integrate the smart contract into a front-end app (React.js or similar).
 
 ### **Phase 5: Testing & Deployment (24-30 Hours)**
@@ -92,4 +92,97 @@ The system consists of two main parts:
 ### **Phase 6: Final Touches & Presentation (30-36 Hours)**
 
 * Polish the UI, add more documentation if needed.
-* Prepare for project submissio
+* Prepare for project submission
+
+---
+
+## **How to Run**
+
+### Prerequisites
+
+1. Node.js (v14 or higher)
+2. npm or yarn
+3. MetaMask or any Web3 wallet
+4. Hardhat
+5. Git
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/Jash-Bohare/MoodNFT.git
+cd MoodNFT
+```
+
+2. Install dependencies:
+```bash
+# Install frontend dependencies
+cd frontend
+npm install
+
+# Install smart contract dependencies
+cd ../contracts
+npm install
+```
+
+3. Set up environment variables:
+   - Create a `.env` file in the root directory
+   - Add your private key and other necessary environment variables:
+```env
+PRIVATE_KEY=your_private_key_here
+ALCHEMY_API_KEY=your_alchemy_api_key
+```
+
+### Running the Project
+
+1. Start the local blockchain:
+```bash
+cd contracts
+npx hardhat node
+```
+
+2. Deploy the smart contracts:
+```bash
+npx hardhat run scripts/deploy.js --network localhost
+```
+
+3. Start the frontend development server:
+```bash
+cd frontend
+npm start
+```
+
+### Testing
+
+1. Run smart contract tests:
+```bash
+cd contracts
+npx hardhat test
+```
+
+2. Test the frontend:
+```bash
+cd frontend
+npm test
+```
+
+### Interacting with the NFT
+
+1. Connect your MetaMask wallet to the local network (localhost:8545)
+2. Import the test account using the private key provided by Hardhat
+3. Mint a new NFT using the frontend interface
+4. Interact with the NFT to see mood changes
+5. Check the NFT's metadata and attributes in the UI
+
+### Troubleshooting
+
+- If you encounter any issues with MetaMask, make sure you're connected to the correct network
+- For contract deployment issues, check your environment variables
+- If the frontend fails to connect, verify that the contract address is correctly set in the frontend configuration
+
+### Additional Notes
+
+- The project uses Hardhat for local development and testing
+- The frontend is built with React and uses ethers.js for blockchain interaction
+- Make sure to have enough test ETH in your wallet for transactions
+- The AI oracle service needs to be running for mood updates to work
