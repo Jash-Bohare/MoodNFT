@@ -7,7 +7,6 @@ async function main() {
   const MoodNFT = await hre.ethers.getContractFactory("MoodNFT");
   const moodNFT = await MoodNFT.attach(contractAddress).connect(deployer);
 
-  // 👇 Set recipient to your MetaMask wallet
   const recipient = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266";
 
   console.log(`Minting NFT to address: ${recipient}`);
