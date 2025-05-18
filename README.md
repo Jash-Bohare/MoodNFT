@@ -1,111 +1,101 @@
-# MoodNFT
+# MoodNFT - Dynamic AI-Influenced NFTs
 
-An interactive NFT project where each NFT's mood changes based on user interactions. The NFT's mood score and status are stored on-chain and can be influenced by positive and negative interactions.
+## Problem Statement
+Traditional NFTs are static digital assets that don't evolve or respond to user interactions. This limitation reduces their utility and engagement potential. In a world where digital assets are becoming increasingly important, there's a need for NFTs that can:
+- Adapt and evolve based on user interactions
+- Provide dynamic experiences
+- Create emotional connections with owners
+- Offer more than just static images
 
-## Features
+## Solution
+MoodNFT introduces a revolutionary concept where NFTs dynamically change their mood and appearance based on user interactions. Each NFT maintains a mood score that fluctuates based on positive and negative interactions, creating a living, breathing digital asset that responds to its owner's engagement. The system uses smart contracts to track interactions and update the NFT's state on-chain, ensuring transparency and immutability.
 
-- Mint your own MoodNFT
-- Interact with your NFT to increase its mood score (+10)
-- Negative interactions decrease the mood score (-5)
-- Dynamic mood status based on score:
-  - "Very Happy" (score >= 25)
-  - "Happy" (score > 0)
-  - "Neutral" (score = 0)
-  - "Sad" (score < 0)
-  - "Very Sad" (score <= -25)
-- Cooldown period between interactions (60 seconds)
-- One NFT per wallet address
+## Key Features
+- **Dynamic Mood System**: NFTs change their mood based on user interactions
+- **Real-time Updates**: Instant visual feedback on interactions
+- **On-chain Storage**: All interactions and mood changes are recorded on the blockchain
+- **Interactive Interface**: User-friendly dashboard for NFT management
+- **Responsive Design**: Works seamlessly across all devices
+- **Cooldown System**: Prevents spam interactions
+- **Inactivity Detection**: Mood changes based on user engagement patterns
 
 ## Tech Stack
+- **Smart Contracts**: Solidity, Hardhat
+- **Frontend**: React.js, CSS3
+- **Blockchain**: Ethereum (Local Hardhat Network)
+- **Web3 Integration**: ethers.js
+- **Development Tools**: Node.js, npm
+- **Version Control**: Git, GitHub
 
-- Solidity (Smart Contracts)
-- Hardhat (Development Environment)
-- React (Frontend)
-- ethers.js (Blockchain Interaction)
-- MetaMask (Wallet Integration)
+## Architecture
+The system consists of three main components:
 
-## Prerequisites
+1. **Smart Contract Layer**
+   - MoodNFT.sol: Manages NFT creation and mood updates
+   - Handles interaction logic and score calculations
+   - Stores all NFT data on-chain
 
-- Node.js (v14 or higher)
-- MetaMask browser extension
-- Git
+2. **Frontend Layer**
+   - React-based dashboard
+   - Real-time interaction interface
+   - Responsive design for all devices
+   - Web3 integration for blockchain interaction
 
-## Installation
+3. **Interaction Flow**
+   ```
+   User Action → Frontend → Smart Contract → State Update → UI Update
+   ```
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/MoodNFT.git
-cd MoodNFT
-```
+## Installation & Setup
+1. Clone the repository
+   ```bash
+   git clone https://github.com/Jash-Bohare/MoodNFT.git
+   cd MoodNFT
+   ```
 
-2. Install dependencies:
-```bash
-npm install
-cd frontend
-npm install
-```
+2. Install dependencies
+   ```bash
+   npm install
+   cd frontend
+   npm install
+   ```
 
-3. Create a `.env` file in the root directory:
-```
-REACT_APP_CONTRACT_ADDRESS=your_contract_address
-```
+3. Start local Hardhat node
+   ```bash
+   npx hardhat node
+   ```
 
-## Running Locally
+4. Deploy contract
+   ```bash
+   npx hardhat run scripts/deploy.js --network localhost
+   ```
 
-1. Start a local Hardhat node:
-```bash
-npx hardhat node
-```
-
-2. Deploy the contract:
-```bash
-npx hardhat run scripts/deploy.js --network localhost
-```
-
-3. Start the frontend:
-```bash
-cd frontend
-npm start
-```
-
-4. Configure MetaMask:
-   - Network: Localhost 8545
-   - Chain ID: 31337
-   - Currency Symbol: ETH
+5. Start frontend
+   ```bash
+   cd frontend
+   npm start
+   ```
 
 ## Usage
-
 1. Connect your MetaMask wallet
-2. Mint your MoodNFT
-3. Use the "Interact" button to increase mood score
-4. Use "Don't Interact" button to decrease mood score
-5. Wait for the cooldown period between interactions
+2. Mint a new MoodNFT
+3. Interact with your NFT:
+   - Click "Interact" to increase mood score
+   - Click "Don't Interact" to decrease mood score
+4. Watch your NFT's mood change based on interactions
 
-## Smart Contract
-
-The main contract `MoodNFT.sol` implements:
-- ERC721 standard for NFT functionality
-- Mood score tracking
-- Interaction cooldown system
-- Status updates based on mood score
-
-## Frontend
-
-The React frontend provides:
-- Wallet connection
-- NFT minting interface
-- Interaction controls
-- Real-time mood status display
-- Cooldown timer
-
-## License
-
-MIT
+## Future Enhancements
+- Integration with IPFS for decentralized image storage
+- Additional interaction types
+- Social features and NFT trading
+- Cross-chain compatibility
+- Advanced mood visualization
 
 ## Contributing
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+## License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Contact
+For any queries or suggestions, please open an issue in the GitHub repository.
