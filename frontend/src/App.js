@@ -453,14 +453,39 @@ function App() {
 
           {/* Wallet Info */}
           {!walletAddress ? (
-            <ConnectWallet setWalletAddress={setWalletAddress} />
+            <button 
+              className="connect-button"
+              onClick={async () => {
+                try {
+                  const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                  });
+                  setWalletAddress(accounts[0]);
+                } catch (error) {
+                  console.error('Error connecting wallet:', error);
+                }
+              }}
+            >
+              Connect Wallet
+            </button>
           ) : (
-            <div className="wallet-section">
-              <div className="wallet-info">
-                <span>Connected Wallet:</span>
-                <span className="wallet-address">{walletAddress}</span>
+            <>
+              <div className="wallet-section">
+                <div className="wallet-info">
+                  <span>Connected Wallet:</span>
+                  <span className="wallet-address">{walletAddress}</span>
+                </div>
               </div>
-            </div>
+              <button 
+                className="exit-button"
+                onClick={() => {
+                  setWalletAddress('');
+                  setNfts([]);
+                }}
+              >
+                Exit Dashboard
+              </button>
+            </>
           )}
         </div>
 
@@ -507,8 +532,6 @@ function App() {
                           <span className="stat-label">Status</span>
                           <span className="stat-value">{nft.stats[1]}</span>
                         </div>
-                      </div>
-                      <div className="stat-row">
                         <div className="stat-block">
                           <span className="stat-label">Interactions</span>
                           <span className="stat-value">{nft.stats[4].toString()}</span>

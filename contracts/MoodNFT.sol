@@ -151,9 +151,9 @@ contract MoodNFT is ERC721Enumerable, Ownable {
             moodStatus[tokenId] = "Happy";
         } else if (moodScore[tokenId] == 0) {
             moodStatus[tokenId] = "Neutral";
-        } else if (moodScore[tokenId] < 0) {
+        } else if (moodScore[tokenId] >= -24) {
             moodStatus[tokenId] = "Sad";
-        } else if (moodScore[tokenId] <= -25) {
+        } else {
             moodStatus[tokenId] = "Very Sad";
         }
 
@@ -179,9 +179,9 @@ contract MoodNFT is ERC721Enumerable, Ownable {
                 moodStatus[tokenId] = "Happy";
             } else if (moodScore[tokenId] == 0) {
                 moodStatus[tokenId] = "Neutral";
-            } else if (moodScore[tokenId] < 0) {
+            } else if (moodScore[tokenId] >= -24) {
                 moodStatus[tokenId] = "Sad";
-            } else if (moodScore[tokenId] <= -25) {
+            } else {
                 moodStatus[tokenId] = "Very Sad";
             }
             
