@@ -82,6 +82,64 @@ function App() {
   const [error, setError] = useState('');
   const [provider, setProvider] = useState(null);
   const [contract, setContract] = useState(null);
+  const [cooldownTimers, setCooldownTimers] = useState({});
+
+  // Add useEffect for cooldown timers
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCooldownTimers(prev => {
+        const newTimers = { ...prev };
+        let hasChanges = false;
+
+        Object.keys(newTimers).forEach(tokenId => {
+          if (newTimers[tokenId] > 0) {
+            newTimers[tokenId]--;
+            hasChanges = true;
+          } else {
+            delete newTimers[tokenId];
+            hasChanges = true;
+          }
+        });
+
+        return hasChanges ? newTimers : prev;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Update cooldown timer when interacting
+  const updateCooldownTimer = (tokenId) => {
+    setCooldownTimers(prev => ({
+      ...prev,
+      [tokenId]: 60 // 60 seconds cooldown
+    }));
+  };
+
+  // Add useEffect for clearing messages
+  useEffect(() => {
+    let timer;
+    if (refreshMessage) {
+      timer = setTimeout(() => {
+        setRefreshMessage("");
+      }, 3000); // Clear after 3 seconds
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [refreshMessage]);
+
+  useEffect(() => {
+    let timer;
+    if (error) {
+      timer = setTimeout(() => {
+        setError("");
+      }, 3000); // Clear after 3 seconds
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [error]);
 
   useEffect(() => {
     const initProvider = async () => {
@@ -255,9 +313,7 @@ function App() {
       
       if (timeSinceLastInteraction < cooldownTime) {
         const remainingTime = cooldownTime - timeSinceLastInteraction;
-        const minutes = Math.floor(remainingTime / 60);
-        const seconds = remainingTime % 60;
-        setError(`Please wait ${minutes}m ${seconds}s before interacting again`);
+        setError(`Please wait ${remainingTime}s before interacting again`);
         return;
       }
       
@@ -265,8 +321,9 @@ function App() {
       const receipt = await tx.wait();
       
       if (receipt.status === 1) {
+        updateCooldownTimer(tokenId);
         await fetchNFTs();
-        setRefreshMessage("Successfully interacted with your NFT! Gained 10 XP!");
+        setRefreshMessage("Successfully interacted with your NFT! Mood score increased!");
       } else {
         throw new Error("Transaction failed");
       }
@@ -306,9 +363,7 @@ function App() {
       
       if (timeSinceLastInteraction < cooldownTime) {
         const remainingTime = cooldownTime - timeSinceLastInteraction;
-        const minutes = Math.floor(remainingTime / 60);
-        const seconds = remainingTime % 60;
-        setError(`Please wait ${minutes}m ${seconds}s before interacting again`);
+        setError(`Please wait ${remainingTime}s before interacting again`);
         return;
       }
       
@@ -316,8 +371,9 @@ function App() {
       const receipt = await tx.wait();
       
       if (receipt.status === 1) {
+        updateCooldownTimer(tokenId);
         await fetchNFTs();
-        setRefreshMessage("Negative interaction recorded. NFT's mood has decreased");
+        setRefreshMessage("Negative interaction recorded. Mood score decreased.");
       } else {
         throw new Error("Transaction failed");
       }
@@ -385,115 +441,108 @@ function App() {
     }
   };
 
-  const renderNFT = (nft) => {
-    const { tokenId, metadata, stats } = nft;
-    const [moodScore, moodStatus, experiencePoints, level, interactionCount, lastInteractionTime] = stats;
-    const cooldownTime = 60; // 1 minute for testing
-    const timeSinceLastInteraction = Math.floor(Date.now() / 1000) - Number(lastInteractionTime);
-    const canInteract = timeSinceLastInteraction >= cooldownTime;
-    const remainingTime = cooldownTime - timeSinceLastInteraction;
-    const minutes = Math.floor(remainingTime / 60);
-    const seconds = remainingTime % 60;
-
-    return (
-      <div key={tokenId.toString()} className="nft-card">
-        <div className="nft-image-container">
-          <img src={getImageUrl(metadata?.image)} alt={`NFT #${tokenId}`} className="nft-image" />
-        </div>
-        <div className="nft-info">
-          <h3>{metadata?.name || `MoodNFT #${tokenId}`}</h3>
-          <p>{metadata?.description || "An NFT with AI-influenced mood and interactive features."}</p>
-          <div className="mood-score">
-            <span>Mood Score:</span>
-            <span>{moodScore.toString()}</span>
-          </div>
-          <div className="mood-status">
-            <span>Status:</span>
-            <span>{moodStatus}</span>
-          </div>
-          <div className="nft-level">
-            <span>Level:</span>
-            <span>{level.toString()}</span>
-          </div>
-          <div className="nft-xp">
-            <span>XP:</span>
-            <span>{experiencePoints.toString()}</span>
-          </div>
-          <div className="nft-interactions">
-            <span>Interactions:</span>
-            <span>{interactionCount.toString()}</span>
-          </div>
-          <div className="interaction-buttons">
-            <button
-              className={`interact-button ${!canInteract ? 'disabled' : ''}`}
-              onClick={() => interactWithNFT(tokenId)}
-              disabled={!canInteract || isLoading}
-            >
-              {canInteract ? 'Interact (+10 XP)' : `Cooldown: ${minutes}m ${seconds}s`}
-            </button>
-            <button
-              className={`negative-interact-button ${!canInteract ? 'disabled' : ''}`}
-              onClick={() => negativeInteractWithNFT(tokenId)}
-              disabled={!canInteract || isLoading}
-            >
-              {canInteract ? 'Don\'t Interact' : `Cooldown: ${minutes}m ${seconds}s`}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>MoodNFT</h1>
-        <p className="subtitle">Your AI-Influenced NFT Collection</p>
-      </header>
+      <div className="dashboard-container">
+        {/* Left Sidebar */}
+        <div className="sidebar">
+          <div className="header-content">
+            <h1 className="neon-text">MoodNFT</h1>
+            <p className="subtitle">AI-Influenced NFT Dashboard</p>
+          </div>
 
-      {!walletAddress ? (
-        <ConnectWallet setWalletAddress={setWalletAddress} />
-      ) : (
-        <div className="wallet-info">
-          <span>Connected Wallet:</span>
-          <span className="wallet-address">{walletAddress}</span>
-          <button 
-            className="refresh-button" 
-            onClick={refreshNFTData}
-            disabled={refreshing}
-          >
-            {refreshing ? 'Refreshing...' : 'Refresh NFT Data'}
-          </button>
+          {/* Wallet Info */}
+          {!walletAddress ? (
+            <ConnectWallet setWalletAddress={setWalletAddress} />
+          ) : (
+            <div className="wallet-section">
+              <div className="wallet-info">
+                <span>Connected Wallet:</span>
+                <span className="wallet-address">{walletAddress}</span>
+              </div>
+            </div>
+          )}
         </div>
-      )}
 
-      {error && (
-        <div className="message error">
-          {error}
-        </div>
-      )}
+        {/* Main Content */}
+        <div className="main-content">
+          {/* Messages */}
+          <div className="messages-container">
+            {error && (
+              <div className="message error">
+                {error}
+              </div>
+            )}
+            {refreshMessage && (
+              <div className="message success">
+                {refreshMessage}
+              </div>
+            )}
+          </div>
 
-      {refreshMessage && (
-        <div className="message success">
-          {refreshMessage}
+          {/* NFT Display */}
+          {isLoading ? (
+            <div className="loading-container">
+              <div className="loading"></div>
+              <span>Loading...</span>
+            </div>
+          ) : nfts.length > 0 ? (
+            <div className="nft-display">
+              {nfts.map((nft) => (
+                <div key={nft.tokenId.toString()} className="nft-card glass">
+                  <div className="nft-header">
+                    <h3 className="neon-text">{nft.metadata?.name || `MoodNFT #${nft.tokenId}`}</h3>
+                  </div>
+                  <div className="nft-content">
+                    <div className="nft-image-container">
+                      <img src={getImageUrl(nft.metadata?.image)} alt={`NFT #${nft.tokenId}`} className="nft-image" />
+                    </div>
+                    <div className="nft-stats">
+                      <div className="stat-row">
+                        <div className="stat-block">
+                          <span className="stat-label">Mood Score</span>
+                          <span className="stat-value">{nft.stats[0].toString()}</span>
+                        </div>
+                        <div className="stat-block">
+                          <span className="stat-label">Status</span>
+                          <span className="stat-value">{nft.stats[1]}</span>
+                        </div>
+                      </div>
+                      <div className="stat-row">
+                        <div className="stat-block">
+                          <span className="stat-label">Interactions</span>
+                          <span className="stat-value">{nft.stats[4].toString()}</span>
+                        </div>
+                      </div>
+                      <div className="interaction-buttons">
+                        <button
+                          className={`interact-button ${cooldownTimers[nft.tokenId] ? 'disabled' : ''}`}
+                          onClick={() => interactWithNFT(nft.tokenId)}
+                          disabled={cooldownTimers[nft.tokenId] || isLoading}
+                        >
+                          {cooldownTimers[nft.tokenId] ? `Cooldown (${cooldownTimers[nft.tokenId]}s)` : 'Interact (+10)'}
+                        </button>
+                        <button
+                          className={`negative-interact-button ${cooldownTimers[nft.tokenId] ? 'disabled' : ''}`}
+                          onClick={() => negativeInteractWithNFT(nft.tokenId)}
+                          disabled={cooldownTimers[nft.tokenId] || isLoading}
+                        >
+                          {cooldownTimers[nft.tokenId] ? `Cooldown (${cooldownTimers[nft.tokenId]}s)` : 'Don\'t Interact (-5)'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : walletAddress ? (
+            <div className="no-nfts">
+              <p>You don't own any NFTs yet!</p>
+              <p>Connect your wallet to mint your first MoodNFT</p>
+            </div>
+          ) : null}
         </div>
-      )}
-
-      {isLoading ? (
-        <div className="loading-container">
-          <div className="loading"></div>
-          <span>Loading...</span>
-        </div>
-      ) : nfts.length > 0 ? (
-        <div className="nft-grid">
-          {nfts.map(renderNFT)}
-        </div>
-      ) : walletAddress ? (
-        <div className="no-nfts">
-          <p>You don't own any NFTs yet!</p>
-          <p>Connect your wallet to mint your first MoodNFT</p>
-        </div>
-      ) : null}
+      </div>
     </div>
   );
 }

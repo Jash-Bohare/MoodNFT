@@ -1,188 +1,111 @@
-# **MoodNFT**
+# MoodNFT
 
-> Empowering NFTs with Dynamic Metadata Controlled by AI
+An interactive NFT project where each NFT's mood changes based on user interactions. The NFT's mood score and status are stored on-chain and can be influenced by positive and negative interactions.
 
----
+## Features
 
-## **Problem Statement**
+- Mint your own MoodNFT
+- Interact with your NFT to increase its mood score (+10)
+- Negative interactions decrease the mood score (-5)
+- Dynamic mood status based on score:
+  - "Very Happy" (score >= 25)
+  - "Happy" (score > 0)
+  - "Neutral" (score = 0)
+  - "Sad" (score < 0)
+  - "Very Sad" (score <= -25)
+- Cooldown period between interactions (60 seconds)
+- One NFT per wallet address
 
-### What Problem We Are Solving?
+## Tech Stack
 
-Current NFTs are static digital assets, meaning their properties, like metadata and visual characteristics, remain unchanged after minting. This limits the possibilities for interaction and user engagement. NFTs are essentially "one-time" creations, and once they are minted, their state cannot evolve based on the user's behavior or external factors like AI-driven analysis.
+- Solidity (Smart Contracts)
+- Hardhat (Development Environment)
+- React (Frontend)
+- ethers.js (Blockchain Interaction)
+- MetaMask (Wallet Integration)
 
-### Why is This Problem Important or Urgent?
+## Prerequisites
 
-As NFTs grow in popularity, creators and collectors are looking for ways to enhance the experience of owning these digital assets. Static NFTs fail to reflect the evolving nature of the digital world. If NFTs could change over time, based on factors like user interaction or AI models, it could create deeper engagement, make NFTs more meaningful, and introduce new use cases in gaming, art, and collectibles.
+- Node.js (v14 or higher)
+- MetaMask browser extension
+- Git
 
----
-
-## **Solution / What It Does**
-
-This project introduces **MoodNFT**—ERC721 tokens that have metadata (like mood, power level, or status) that can change over time based on user interaction or external AI signals. The **AI oracle** plays a key role, providing off-chain data that updates the NFT's attributes. The changes are then reflected on-chain and can be viewed through the NFT's dynamic metadata.
-
-Whenever a user interacts with the NFT in specific ways (positive or negative), the AI system evaluates the interaction and updates the NFT's attributes like `moodScore`, `statusLevel`, etc. This makes NFTs more interactive and engaging, as they can evolve based on real-time conditions.
-
----
-
-## **Key Features**
-
-* **Dynamic Metadata**: NFTs that change attributes (e.g., mood, status) over time based on user interaction.
-* **AI Integration**: Off-chain AI oracle sends updates to the NFT contract to change its attributes based on predefined logic (positive or negative actions).
-* **ERC721 Compliance**: Fully compliant with ERC721 standards, ensuring broad compatibility and ease of use.
-* **On-Chain Updates**: NFT attributes are stored on-chain, ensuring transparency and immutability.
-* **Oracle-Driven Changes**: Only authorized oracles (AI services) can modify the NFT's attributes to prevent unauthorized changes.
-* **Token URI**: The `tokenURI` function returns dynamic JSON metadata, reflecting the current state of the NFT.
-* **Event Emission**: Smart contract emits events when an NFT's attribute is updated, allowing users to track changes.
-
----
-
-## **Tech Stack**
-
-* **Blockchain & Smart Contract**: Ethereum (ERC721), Solidity
-* **Oracle Integration**: Off-chain AI system (Python, TensorFlow, or any AI service), Web3.js or ethers.js for smart contract interaction
-* **Storage**: IPFS (for static image hosting or metadata storage)
-* **Front-End (optional)**: React.js or any front-end framework to display the NFTs and their changing attributes
-* **Development Environment**: Hardhat/Truffle for smart contract development and testing, Ganache for local testing
-
----
-
-## **Architecture / System Design**
-
-### Summary:
-
-The system consists of two main parts:
-
-1. **NFT Smart Contract**: The ERC721 contract where each NFT can have mutable attributes. The contract includes the `tokenURI` function to serve dynamic metadata based on user interaction and AI input.
-2. **AI Oracle**: An off-chain AI service that evaluates user interactions with NFTs and updates the NFT's attributes. The oracle communicates with the smart contract to update the attributes (e.g., `moodScore`).
-3. **User Interaction**: A user interacts with the NFT (for example, using a web application), and based on those actions, the oracle decides whether the interaction is positive or negative, then updates the attributes accordingly.
-
-*Note: A diagram illustrating the flow of data between the smart contract, oracle, and user interactions will be added in the docs section.*
-
----
-
-## **Roadmap**
-
-### **Phase 1: Conceptualization & Planning (0-6 Hours)**
-
-* Define core NFT attributes (e.g., moodScore, status).
-* Set up the structure for the smart contract (ERC721).
-
-### **Phase 2: Smart Contract Development (6-12 Hours)**
-
-* Implement the ERC721 contract with dynamic attributes.
-* Set up `tokenURI` to return dynamic metadata.
-* Develop an access control system for the oracle to update the NFT.
-
-### **Phase 3: AI Oracle Integration (12-24 Hours)**
-
-* Build or integrate an off-chain AI model that can evaluate user actions (positive/negative).
-* Set up the oracle service to interact with the smart contract and update the NFT's attributes.
-* Test the interaction between the oracle and the smart contract.
-
-### **Phase 4: Front-End Development (Optional, 12-24 Hours)**
-
-* Create a simple UI to showcase the NFT's attributes.
-* Integrate the smart contract into a front-end app (React.js or similar).
-
-### **Phase 5: Testing & Deployment (24-30 Hours)**
-
-* Test the smart contract on a local Ethereum testnet (e.g., Ganache).
-* Deploy to a public testnet (e.g., Rinkeby or Mumbai).
-
-### **Phase 6: Final Touches & Presentation (30-36 Hours)**
-
-* Polish the UI, add more documentation if needed.
-* Prepare for project submission.
-
----
-
-## **How to Run**
-
-### Prerequisites
-
-1. Node.js (v14 or higher)
-2. npm or yarn
-3. MetaMask or any Web3 wallet
-4. Hardhat
-5. Git
-
-### Installation
+## Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/Jash-Bohare/MoodNFT.git
+git clone https://github.com/yourusername/MoodNFT.git
 cd MoodNFT
 ```
 
 2. Install dependencies:
 ```bash
-# Install frontend dependencies
+npm install
 cd frontend
 npm install
-
-# Install smart contract dependencies
-cd ../contracts
-npm install
 ```
 
-3. Set up environment variables:
-   - Create a `.env` file in the root directory
-   - Add your private key and other necessary environment variables:
-```env
-PRIVATE_KEY=your_private_key_here
-ALCHEMY_API_KEY=your_alchemy_api_key
+3. Create a `.env` file in the root directory:
+```
+REACT_APP_CONTRACT_ADDRESS=your_contract_address
 ```
 
-### Running the Project
+## Running Locally
 
-1. Start the local blockchain:
+1. Start a local Hardhat node:
 ```bash
-cd contracts
 npx hardhat node
 ```
 
-2. Deploy the smart contracts:
+2. Deploy the contract:
 ```bash
 npx hardhat run scripts/deploy.js --network localhost
 ```
 
-3. Start the frontend development server:
+3. Start the frontend:
 ```bash
 cd frontend
 npm start
 ```
 
-### Testing
+4. Configure MetaMask:
+   - Network: Localhost 8545
+   - Chain ID: 31337
+   - Currency Symbol: ETH
 
-1. Run smart contract tests:
-```bash
-cd contracts
-npx hardhat test
-```
+## Usage
 
-2. Test the frontend:
-```bash
-cd frontend
-npm test
-```
+1. Connect your MetaMask wallet
+2. Mint your MoodNFT
+3. Use the "Interact" button to increase mood score
+4. Use "Don't Interact" button to decrease mood score
+5. Wait for the cooldown period between interactions
 
-### Interacting with the NFT
+## Smart Contract
 
-1. Connect your MetaMask wallet to the local network (localhost:8545)
-2. Import the test account using the private key provided by Hardhat
-3. Mint a new NFT using the frontend interface
-4. Interact with the NFT to see mood changes
-5. Check the NFT's metadata and attributes in the UI
+The main contract `MoodNFT.sol` implements:
+- ERC721 standard for NFT functionality
+- Mood score tracking
+- Interaction cooldown system
+- Status updates based on mood score
 
-### Troubleshooting
+## Frontend
 
-- If you encounter any issues with MetaMask, make sure you're connected to the correct network
-- For contract deployment issues, check your environment variables
-- If the frontend fails to connect, verify that the contract address is correctly set in the frontend configuration
+The React frontend provides:
+- Wallet connection
+- NFT minting interface
+- Interaction controls
+- Real-time mood status display
+- Cooldown timer
 
-### Additional Notes
+## License
 
-- The project uses Hardhat for local development and testing
-- The frontend is built with React and uses ethers.js for blockchain interaction
-- Make sure to have enough test ETH in your wallet for transactions
-- The AI oracle service needs to be running for mood updates to work
+MIT
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request

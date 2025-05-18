@@ -27,7 +27,8 @@ contract MoodNFT is ERC721Enumerable, Ownable {
     uint256 public constant COOLDOWN_PERIOD = 1 minutes;
     uint256 public constant INACTIVITY_THRESHOLD = 5 minutes;
     int256 public constant SCORE_DECREASE = -5;
-    int256 public constant NEGATIVE_INTERACTION_PENALTY = -15;
+    int256 public constant POSITIVE_INTERACTION_BONUS = 10;
+    int256 public constant NEGATIVE_INTERACTION_PENALTY = -5;
 
     // Events
     event MoodUpdated(uint256 indexed tokenId, int256 moodScore, string moodStatus);
@@ -97,6 +98,25 @@ contract MoodNFT is ERC721Enumerable, Ownable {
         experiencePoints[tokenId] += xpGained;
         emit ExperienceGained(tokenId, xpGained, experiencePoints[tokenId]);
 
+        // Update mood score - ensure it only increases by the defined bonus
+        int256 currentScore = moodScore[tokenId];
+        int256 newScore = currentScore + POSITIVE_INTERACTION_BONUS;
+        if (newScore > 100) newScore = 100;
+        moodScore[tokenId] = newScore;
+        
+        // Update status based on score
+        if (moodScore[tokenId] >= 25) {
+            moodStatus[tokenId] = "Very Happy";
+        } else if (moodScore[tokenId] > 0) {
+            moodStatus[tokenId] = "Happy";
+        } else if (moodScore[tokenId] == 0) {
+            moodStatus[tokenId] = "Neutral";
+        } else if (moodScore[tokenId] < 0) {
+            moodStatus[tokenId] = "Sad";
+        } else if (moodScore[tokenId] <= -25) {
+            moodStatus[tokenId] = "Very Sad";
+        }
+
         // Check for level up
         uint256 currentLevel = level[tokenId];
         uint256 xpForNextLevel = currentLevel * XP_FOR_LEVEL_UP;
@@ -118,17 +138,23 @@ contract MoodNFT is ERC721Enumerable, Ownable {
         lastActivityTime[tokenId] = block.timestamp;
         interactionCount[tokenId]++;
 
-        // Apply negative score
-        moodScore[tokenId] += NEGATIVE_INTERACTION_PENALTY;
-        if (moodScore[tokenId] < -100) moodScore[tokenId] = -100;
+        // Apply negative score - ensure it only decreases by the defined penalty
+        int256 currentScore = moodScore[tokenId];
+        int256 newScore = currentScore + NEGATIVE_INTERACTION_PENALTY;
+        if (newScore < -100) newScore = -100;
+        moodScore[tokenId] = newScore;
         
         // Update status based on score
-        if (moodScore[tokenId] <= -50) {
-            moodStatus[tokenId] = "Very Sad";
-        } else if (moodScore[tokenId] <= -25) {
+        if (moodScore[tokenId] >= 25) {
+            moodStatus[tokenId] = "Very Happy";
+        } else if (moodScore[tokenId] > 0) {
+            moodStatus[tokenId] = "Happy";
+        } else if (moodScore[tokenId] == 0) {
+            moodStatus[tokenId] = "Neutral";
+        } else if (moodScore[tokenId] < 0) {
             moodStatus[tokenId] = "Sad";
-        } else {
-            moodStatus[tokenId] = "Disappointed";
+        } else if (moodScore[tokenId] <= -25) {
+            moodStatus[tokenId] = "Very Sad";
         }
 
         emit ScoreDecreased(tokenId, moodScore[tokenId], "Negative Interaction");
@@ -140,16 +166,23 @@ contract MoodNFT is ERC721Enumerable, Ownable {
         require(_exists(tokenId), "ERC721: token does not exist");
         
         if (block.timestamp >= lastActivityTime[tokenId] + INACTIVITY_THRESHOLD) {
-            moodScore[tokenId] += SCORE_DECREASE;
-            if (moodScore[tokenId] < -100) moodScore[tokenId] = -100;
+            // Update mood score - ensure it only decreases by the defined amount
+            int256 currentScore = moodScore[tokenId];
+            int256 newScore = currentScore + SCORE_DECREASE;
+            if (newScore < -100) newScore = -100;
+            moodScore[tokenId] = newScore;
             
             // Update status based on score
-            if (moodScore[tokenId] <= -50) {
-                moodStatus[tokenId] = "Very Sad";
-            } else if (moodScore[tokenId] <= -25) {
-                moodStatus[tokenId] = "Sad";
+            if (moodScore[tokenId] >= 25) {
+                moodStatus[tokenId] = "Very Happy";
+            } else if (moodScore[tokenId] > 0) {
+                moodStatus[tokenId] = "Happy";
+            } else if (moodScore[tokenId] == 0) {
+                moodStatus[tokenId] = "Neutral";
             } else if (moodScore[tokenId] < 0) {
-                moodStatus[tokenId] = "Disappointed";
+                moodStatus[tokenId] = "Sad";
+            } else if (moodScore[tokenId] <= -25) {
+                moodStatus[tokenId] = "Very Sad";
             }
             
             lastActivityTime[tokenId] = block.timestamp;
