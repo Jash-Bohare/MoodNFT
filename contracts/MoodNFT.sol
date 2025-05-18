@@ -138,7 +138,7 @@ contract MoodNFT is ERC721Enumerable, Ownable {
         lastActivityTime[tokenId] = block.timestamp;
         interactionCount[tokenId]++;
 
-        // Apply negative score - ensure it only decreases by the defined penalty
+        // Apply negative score
         int256 currentScore = moodScore[tokenId];
         int256 newScore = currentScore + NEGATIVE_INTERACTION_PENALTY;
         if (newScore < -100) newScore = -100;
